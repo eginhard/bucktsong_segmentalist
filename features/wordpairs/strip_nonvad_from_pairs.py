@@ -107,12 +107,16 @@ def main():
         if len(line) == 9:
             # Aren's format
             cluster, utt1, speaker1, start1, end1, utt2, speaker2, start2, end2 = line
-            start1 = int(start1)
-            end1 = int(end1)
-            start2 = int(start2)
-            end2 = int(end2)
-            utt1 = utt1.replace("_", "-")
-            utt2 = utt2.replace("_", "-")
+            start1 = int(np.floor(float(start1)*100))
+            end1 = int(np.floor(float(end1)*100))
+            start2 = int(np.floor(float(start2)*100))
+            end2 = int(np.floor(float(end2)*100))
+            # start1 = int(start1)
+            # end1 = int(end1)
+            # start2 = int(start2)
+            # end2 = int(end2)
+            # utt1 = utt1.replace("_", "-")
+            # utt2 = utt2.replace("_", "-")
         elif len(line) == 6:
             # Sameer's format
             utt1, start1, end1, utt2, start2, end2 = line
