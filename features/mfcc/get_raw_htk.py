@@ -18,7 +18,7 @@ from utils import shell
 
 # Data set and coding variables
 buckeye_wavs = "/endgame/projects/phd/datasets/buckeye/*/*.wav"
-tsonga_wavs = "/endgame/projects/phd/zerospeech/data/tsonga/xitsonga_wavs/*.wav"
+tsonga_wavs = "/disk/scratch/s1680167/zero/challenge2015/xitsonga/audio/*/*.wav"
 config_fn = path.join("config", "hcopy.wav.mfcc.wb.conf")
 
 

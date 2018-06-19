@@ -9,8 +9,11 @@ Date: 2015
 """
 
 import argparse
+import mmap
 import numpy as np
 import sys
+from tqdm import tqdm
+from copy import deepcopy
 
 
 #-----------------------------------------------------------------------------#
@@ -28,6 +31,14 @@ def check_argv():
         sys.exit(1)
     return parser.parse_args()
 
+def get_num_lines(file_path):
+    fp = open(file_path, "r+")
+    buf = mmap.mmap(fp.fileno(), 0)
+    lines = 0
+    while buf.readline():
+        lines += 1
+    return lines
+
 
 #-----------------------------------------------------------------------------#
 #                                MAIN FUNCTION                                #
@@ -36,34 +47,24 @@ def check_argv():
 def main():
     args = check_argv()
 
-    # Read the .npz file
-    print "Reading npz:", args.input_npz_fn
-    input_npz = np.load(args.input_npz_fn)
-
-    # Create target segments dict
-    print "Reading segments:", args.segments_fn
-    target_segs = {}  # target_segs["years SP008_1 4951 5017"] is ("SP008_1", 4951, 5017)
-    for line in open(args.segments_fn):
+    output_npz = {}
+    total_target_segs = 0
+    with open(args.segments_fn) as f, np.load(args.input_npz_fn) as input_npz:
+      for line in tqdm(f, total=get_num_lines(args.segments_fn)):
+        total_target_segs += 1
         line_split = line.strip().split("###")
         utterance = line_split[1]
         start = int(line_split[2])
         end = int(line_split[3])
-        target_segs[line.strip()] = (utterance, start, end)
-
-    print "Extracting target segments"
-    output_npz = {}
-    n_target_segs = 0
-    for target_seg_key in target_segs:
-        utterance, start, end = target_segs[target_seg_key]
-
+        target_seg_key = line.strip()
         if utterance in input_npz:
-            output_npz[target_seg_key] = input_npz[utterance][start:end]
-            n_target_segs += 1
-
-        if not target_seg_key in output_npz:
+            output_npz[target_seg_key] = deepcopy(input_npz[utterance][start:end])
+        else:
             print "Missed:", target_seg_key
 
-    print "Extracted " + str(n_target_segs) + " out of " + str(len(target_segs)) + " segments"
+    print "Extracting target segments"
+
+    print "Extracted " + str(len(output_npz.keys())) + " out of " + str(total_target_segs) + " segments"
     print "Writing:", args.output_npz_fn
     np.savez(args.output_npz_fn, **output_npz)
 
